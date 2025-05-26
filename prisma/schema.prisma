@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")  # Comentado temporariamente para testar conectividade
+}
+
+model Profile {
+  id        String   @id @db.Uuid
+  email     String?
+  fullName  String?  @map("full_name")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  debts        Debt[]
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@map("profiles")
+}
+
+model Debt {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String   @map("user_id") @db.Uuid
+  name                String
+  totalAmount         Decimal  @map("total_amount") @db.Decimal(12, 2)
+  monthlyInterestRate Decimal? @map("monthly_interest_rate") @db.Decimal(5, 2)
+  minimumPayment      Decimal  @map("minimum_payment") @db.Decimal(10, 2)
+  dueDay              Int?     @map("due_day")
+  priorityStrategy    String   @default("avalanche") @map("priority_strategy")
+  status              String   @default("active")
+  notes               String?
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  profile      Profile       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("debts")
+}
+
+model Transaction {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  date          DateTime @db.Date
+  description   String
+  category      String
+  subcategory   String?
+  amount        Decimal  @db.Decimal(12, 2)
+  accountSource String?  @map("account_source")
+  debtId        String?  @map("debt_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  profile Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debt    Debt?   @relation(fields: [debtId], references: [id], onDelete: SetNull)
+
+  @@map("transactions")
+}
+
+model Budget {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  month         Int
+  year          Int
+  category      String
+  plannedAmount Decimal  @default(0) @map("planned_amount") @db.Decimal(12, 2)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // Relations
+  profile Profile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year, category])
+  @@map("budget")
+}
