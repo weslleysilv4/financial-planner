@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Dívidas", href: "/debts", icon: CreditCard },
   { name: "Lançamentos", href: "/transactions", icon: Receipt },
   { name: "Orçamento", href: "/budget", icon: PiggyBank },

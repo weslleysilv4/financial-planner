@@ -19,14 +19,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Server-side client
-export const createServerClient = () => {
-  const serverUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serverKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!serverUrl || !serverKey) {
-    throw new Error("Missing server-side Supabase environment variables");
-  }
-
-  return createClient(serverUrl, serverKey);
-};
+export type Database = any; // You can define your database types here
